@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tuw_sensor_transducer</name>
+  <version>0.0.0</version>
+  <description>The tuw_sensor_transducer package</description>
+
+  <maintainer email="eugen.kaltenegger@gmail.com">Eugen Kaltenegger</maintainer>
+
+  <license>BSD</license>
+
+  <author email="eugen.kaltenegger@gmail.com">Eugen Kaltenegger</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>roslint</build_depend>
+
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>roslint</build_export_depend>
+
+  <export>
+    <!-- nothing to export -->
+  </export>
+
+</package>
