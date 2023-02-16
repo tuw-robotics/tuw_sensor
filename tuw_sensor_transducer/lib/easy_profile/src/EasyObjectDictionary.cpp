@@ -1,30 +1,9 @@
 /**
  * EasyObjectDictionary.cpp
- * @author COPYRIGHT(c) 2019 SYD Dynamics ApS
+ * @author COPYRIGHT(c) 2017 SYD Dynamics ApS
  * @see    EasyObjectDictionary.h for more descriptions.
  */
-#include "../../include/EasyProfile/EasyObjectDictionary.h"
-
-
-//------------------------------------------------------------------------
-// Object Items Database  (Part 2/2)
-// The Static DataBase:
-static EOD_DB_Static   eOD_DB_Static[ EOD_DB_SIZE_ ] = {                     // [Legacy Support]
-{EP_CMD_REQUEST_,         sizeof(Ep_Request)         },
-{EP_CMD_ACK_,             sizeof(Ep_Ack)             },
-{EP_CMD_STATUS_,          sizeof(Ep_Status)          },
-{EP_CMD_CALIB_,           sizeof(Ep_Calib)           },
-{EP_CMD_Raw_GYRO_ACC_MAG_,sizeof(Ep_Raw_GyroAccMag)  },
-{EP_CMD_Q_S1_S_,          sizeof(Ep_Q_s1_s)          },
-{EP_CMD_Q_S1_E_,          sizeof(Ep_Q_s1_e)          },
-{EP_CMD_EULER_S1_S_,      sizeof(Ep_Euler_s1_s)      },
-{EP_CMD_EULER_S1_E_,      sizeof(Ep_Euler_s1_e)      },
-{EP_CMD_RPY_,             sizeof(Ep_RPY)             },
-{EP_CMD_GRAVITY_,         sizeof(Ep_Gravity)         }
-};
-// Object Items Database  (Part 2/2)
-//------------------------------------------------------------------------
-
+#include "../include/EasyObjectDictionary.h"
 
 EasyObjectDictionary::EasyObjectDictionary()
 {	
@@ -33,7 +12,6 @@ EasyObjectDictionary::EasyObjectDictionary()
 	if( iDS < (int)sizeof(Ep_Request))       iDS = sizeof(Ep_Request);
     if( iDS < (int)sizeof(Ep_Ack))           iDS = sizeof(Ep_Ack);
     if( iDS < (int)sizeof(Ep_Status))        iDS = sizeof(Ep_Status);
-    if( iDS < (int)sizeof(Ep_Calib))         iDS = sizeof(Ep_Calib);
     if( iDS < (int)sizeof(Ep_Raw_GyroAccMag))iDS = sizeof(Ep_Raw_GyroAccMag);
     if( iDS < (int)sizeof(Ep_Q_s1_s))        iDS = sizeof(Ep_Q_s1_s);
     if( iDS < (int)sizeof(Ep_Q_s1_e))        iDS = sizeof(Ep_Q_s1_e);
@@ -50,7 +28,6 @@ EasyObjectDictionary::EasyObjectDictionary()
 	qRegisterMetaType<Ep_Request>("Ep_Request");
     qRegisterMetaType<Ep_Ack>("Ep_Ack");
     qRegisterMetaType<Ep_Status>("Ep_Status");
-    qRegisterMetaType<Ep_Calib>("Ep_Calib");
     qRegisterMetaType<Ep_Raw_GyroAccMag>("Ep_Raw_GyroAccMag");
     qRegisterMetaType<Ep_Q_s1_s>("Ep_Q_s1_s");
     qRegisterMetaType<Ep_Q_s1_e>("Ep_Q_s1_e");
@@ -92,6 +69,10 @@ int EasyObjectDictionary::Get_MaxSize(){
 }
 
 
+
+
+
+
 //------------------------------------------------------------------------
 //                 Object Specific Read & Write Operations
 //------------------------------------------------------------------------
@@ -113,7 +94,7 @@ int EasyObjectDictionary::Write_Ep_Ack(
     Ep_Header    headerOut;
     ep_Ack.header.cmd    = EP_CMD_ACK_;
     ep_Ack.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Ack.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_Ack.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_Ack.header.toId   = toId               & EP_ID_MASK_;
     ep_Ack.cmdAck        = cmdAck;
     return Write((char*)(&ep_Ack), sizeof(Ep_Ack),  &headerOut);
@@ -129,7 +110,7 @@ int EasyObjectDictionary::Write_Ep_Status(
     Ep_Header    headerOut;
     ep_Status.header.cmd    = EP_CMD_STATUS_;
     ep_Status.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Status.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_Status.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_Status.header.toId   = toId               & EP_ID_MASK_;
     ep_Status.timeStamp  = timeStamp;
     ep_Status.temperature= temperature;
@@ -137,38 +118,16 @@ int EasyObjectDictionary::Write_Ep_Status(
     return Write((char*)(&ep_Status), sizeof(Ep_Status),  &headerOut);
 }
 
-int EasyObjectDictionary::Write_Ep_Calib(
-    EP_ID_TYPE_    toId,       ///< [INPUT]
-    uint8          calibType,  ///< [INPUT]
-    uint8          ctrlVal,    ///< [INPUT]
-    uint16         param1,     ///< [INPUT]
-    uint32         param2,     ///< [INPUT]
-    uint32         param3      ///< [INPUT]
-){
-    Ep_Calib         ep_Calib;
-    Ep_Header        headerOut;
-    ep_Calib.header.cmd    = EP_CMD_CALIB_;
-    ep_Calib.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Calib.header.res    = global_SysQoS      & EP_RES_MASK_;
-    ep_Calib.header.toId   = toId               & EP_ID_MASK_;
-    ep_Calib.calibType = calibType;
-    ep_Calib.ctrlVal   = ctrlVal;
-    ep_Calib.param1    = param1;
-    ep_Calib.param2    = param2;
-    ep_Calib.param3    = param3;
-    return Write((char*)(&ep_Calib), sizeof(Ep_Calib),  &headerOut);
-}
-
 int EasyObjectDictionary::Write_Ep_Q_s1_s(
-    EP_ID_TYPE_  toId,                             ///< [INPUT]
-    uint32 timeStamp,                              ///< [INPUT]
-    float q1, float q2, float q3, float q4         ///< [INPUT]
+    EP_ID_TYPE_  toId,                               ///< [INPUT]
+    uint32 timeStamp,                                ///< [INPUT]
+    float q1, float q2, float q3, float q4           ///< [INPUT]
 ){
     Ep_Q_s1_s        ep_Q_s1_s;
     Ep_Header        headerOut;
     ep_Q_s1_s.header.cmd  = EP_CMD_Q_S1_S_;
     ep_Q_s1_s.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Q_s1_s.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_Q_s1_s.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_Q_s1_s.header.toId   = toId               & EP_ID_MASK_;
     ep_Q_s1_s.timeStamp   = timeStamp;
     ep_Q_s1_s.q[0] = q1;
@@ -189,7 +148,7 @@ int EasyObjectDictionary::Write_Ep_Raw_GyroAccMag(
     Ep_Header            headerOut;
     ep_Raw_GyroAccMag.header.cmd    = EP_CMD_Raw_GYRO_ACC_MAG_;
     ep_Raw_GyroAccMag.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Raw_GyroAccMag.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_Raw_GyroAccMag.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_Raw_GyroAccMag.header.toId   = toId               & EP_ID_MASK_;
     ep_Raw_GyroAccMag.timeStamp     = timeStamp;
     ep_Raw_GyroAccMag.gyro[0] = wx; 
@@ -213,7 +172,7 @@ int EasyObjectDictionary::Write_Ep_Euler_s1_s(
     Ep_Header        headerOut;
     ep_Euler_s1_s.header.cmd    = EP_CMD_EULER_S1_S_;
     ep_Euler_s1_s.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Euler_s1_s.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_Euler_s1_s.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_Euler_s1_s.header.toId   = toId               & EP_ID_MASK_;
     ep_Euler_s1_s.timeStamp     = timeStamp;
     ep_Euler_s1_s.psi   = psi;
@@ -231,7 +190,7 @@ int EasyObjectDictionary::Write_Ep_Q_s1_e(
     Ep_Header        headerOut;
     ep_Q_s1_e.header.cmd    = EP_CMD_Q_S1_E_;
     ep_Q_s1_e.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Q_s1_e.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_Q_s1_e.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_Q_s1_e.header.toId   = toId               & EP_ID_MASK_;
     ep_Q_s1_e.timeStamp     = timeStamp;
     ep_Q_s1_e.q[0] = q1;
@@ -250,7 +209,7 @@ int EasyObjectDictionary::Write_Ep_Euler_s1_e(
     Ep_Header        headerOut;
     ep_Euler_s1_e.header.cmd    = EP_CMD_EULER_S1_E_;
     ep_Euler_s1_e.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Euler_s1_e.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_Euler_s1_e.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_Euler_s1_e.header.toId   = toId               & EP_ID_MASK_;
     ep_Euler_s1_e.timeStamp     = timeStamp;
     ep_Euler_s1_e.psi   = psi;
@@ -268,7 +227,7 @@ int EasyObjectDictionary::Write_Ep_RPY(
     Ep_Header        headerOut;
     ep_RPY.header.cmd    = EP_CMD_RPY_;
     ep_RPY.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_RPY.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_RPY.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_RPY.header.toId   = toId               & EP_ID_MASK_;
     ep_RPY.timeStamp     = timeStamp;
     ep_RPY.roll    = roll;
@@ -286,7 +245,7 @@ int EasyObjectDictionary::Write_Ep_Gravity(
     Ep_Header        headerOut;
     ep_Gravity.header.cmd    = EP_CMD_GRAVITY_;
     ep_Gravity.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Gravity.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_Gravity.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_Gravity.header.toId   = toId               & EP_ID_MASK_;
     ep_Gravity.timeStamp     = timeStamp;
     ep_Gravity.g[0] = gravityX;
@@ -299,7 +258,7 @@ int EasyObjectDictionary::Write_Ep_Gravity(
  * @section Write_Ep_*() Example
    @code
         if(EP_SUCC_ == Write_Ep_Request( 123, EP_CMD_RPY_ )){
-            // write operation successfully done, do something ...
+            // write operation successfuly done, do something ...
         }
    @endcode
  */
@@ -311,12 +270,11 @@ int EasyObjectDictionary::Write_Ep_Request(
     Ep_Header         headerOut;
     ep_Request.header.cmd    = EP_CMD_REQUEST_;
     ep_Request.header.fromId = global_SysShortId  & EP_ID_MASK_;
-    ep_Request.header.res    = global_SysQoS      & EP_RES_MASK_;
+    ep_Request.header.qos    = global_SysQoS      & EP_QOS_MASK_;
     ep_Request.header.toId   = toId               & EP_ID_MASK_;
     ep_Request.cmdRequest    = cmdRequest;
     return Write((char*)(&ep_Request), sizeof(Ep_Request),  &headerOut);
 }
-
 
 /**
  * @section Read_Ep_*() Example
@@ -389,28 +347,6 @@ int EasyObjectDictionary::Read_Ep_Status(
     EOD_DB_SetReadProtect(cmd, false);
     return retVal;
 }
-
-int EasyObjectDictionary::Read_Ep_Calib(
-    Ep_Calib* dataOut
-){
-    EP_CMD_TYPE_  cmd = EP_CMD_CALIB_;
-    int           odLengthOut;
-    char*         odDataOut;
-    int           retVal = EP_FAIL_;
-    if(dataOut == 0) return EP_FAIL_;
-
-    retVal = Read(cmd,  &odDataOut, &odLengthOut);
-    if(retVal == EP_SUCC_){
-        if(odLengthOut == sizeof(Ep_Calib)){
-            for(int i=0; i<odLengthOut; i++){
-              *(((char*)(dataOut))+i) = odDataOut[i];
-            }
-        }
-    }
-    EOD_DB_SetReadProtect(cmd, false);
-    return retVal;
-}
-
 
 int EasyObjectDictionary::Read_Ep_Raw_GyroAccMag(
     Ep_Raw_GyroAccMag* dataOut
@@ -590,7 +526,7 @@ int  EasyObjectDictionary::EOD_DB_FindKey(
   * Set & Reset write protection flag
   * @note   When WriteProtect is enabled to a specific Object:
   *            (1) Write() permission denied: no changes can be made to the Object;
-  *            (2) Read() permission is still available.
+  *            (2) Read() permission is still avilable.
   * @return EP_SUCC_            Setup Successful
   *         EP_MUTEX_LOCKED_    The cmd is already write protected
   *         EP_FAIL_            cmd does not exist in the object dictionary,
@@ -663,7 +599,7 @@ int  EasyObjectDictionary::EOD_DB_SetReadProtect(
 //                                 Read
 //------------------------------------------------------------------------
 /**
-  * Fetch the pointer to the Object from the dictionary specified the identifier cmdIn
+  * Fetch the pointer to the Object from the dictinoary specificed the identifier cmdIn
   *                      
   * @return EP_SUCC_            Read Successful
   *         EP_FAIL_            cmd does not exist in the object dictionary

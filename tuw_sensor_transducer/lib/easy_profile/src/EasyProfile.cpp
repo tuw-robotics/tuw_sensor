@@ -1,9 +1,9 @@
 /**
  * EasyProfile.cpp
- * @author COPYRIGHT(c) 2019 SYD Dynamics ApS
+ * @author COPYRIGHT(c) 2017 SYD Dynamics ApS
  * @see    EasyProfile.h for more descriptions.
  */
-#include "../../include/EasyProfile/EasyProfile.h"
+#include "../include/EasyProfile.h"
 
 
 EasyProfile::EasyProfile(EasyObjectDictionary *eOD_i){
@@ -59,9 +59,9 @@ int EasyProfile::On_SendPkg(
 /**
  * @brief  EasyProfile::On_RecvPkg
  * @return EP_SUCC_          New package received
- *         EP_NORMAL_EXIT_   No new package received, no error occurred / package ignored due to RecvFilter policy
+ *         EP_NORMAL_EXIT_   No new package received, no error occured / package ignored due to RecvFilter policy
  *         EP_MUTEX_LOCKED_  Read / Write permission denied
- *         EP_FAIL_          Bad package / Bad header received
+ *         EP_FAIL_          Bad package / Bad hadder received
  */
 int EasyProfile::On_RecvPkg(
         char*             data,    ///< [INPUT]  Pointer to received raw data

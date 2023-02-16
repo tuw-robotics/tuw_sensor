@@ -7,21 +7,19 @@ find_package(
     roscpp
     rospy
     roslint
+    sensor_msgs
 )
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets SerialPort)
-
-set(CMAKE_AUTOMOC ON)
+#find_package(Qt5 REQUIRED COMPONENTS Core Widgets SerialPort)
 
 catkin_package(
   INCLUDE_DIRS
-    include
+  include
+  lib/easy_profile/include
 )
 
 include_directories(
   ./include
-  ./lib/include
-  ./lib/resource
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -29,31 +27,40 @@ roslint_cpp()
 
 add_library(
   lib_transducer
-  lib/src/EasyProfile/EasyObjectDictionary.cpp
-  lib/src/EasyProfile/EasyProfile.cpp
-  lib/src/EasyProfile/EasyProtocol.cpp
-  lib/src/HelloMotionModule.cpp
+  lib/easy_profile/src/EasyObjectDictionary.cpp
+  lib/easy_profile/src/EasyProfile.cpp
+  lib/easy_profile/src/EasyProtocol.cpp
+  lib/easy_profile/src/serialib.cpp
 )
 
-target_link_libraries(
-  lib_transducer
-  Qt5::Widgets
-  Qt5::SerialPort
-)
-
-add_executable(
-  lib_transducer_example
-  lib/src/main.cpp
+add_library(
+  ${PROJECT_NAME}
+  src/${PROJECT_NAME}/sensor
 )
 
 add_dependencies(
-  lib_transducer_example
+  ${PROJECT_NAME}
   lib_transducer
 )
 
 target_link_libraries(
-  lib_transducer_example
+  ${PROJECT_NAME}
   lib_transducer
-  Qt5::Widgets
-  Qt5::SerialPort
+)
+
+add_executable(
+  ${PROJECT_NAME}_node
+  src/${PROJECT_NAME}_node.cpp
+)
+
+add_dependencies(
+  ${PROJECT_NAME}_node
+  ${PROJECT_NAME}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(
+  ${PROJECT_NAME}_node
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
 )

@@ -1,9 +1,9 @@
 /**
  * @file   EasyProtocol.cpp
- * @author COPYRIGHT(c) 2019 SYD Dynamics ApS
+ * @author COPYRIGHT(c) 2017 SYD Dynamics ApS
  * @see    EasyProtocol.h for more comments
  */
-#include "../../include/EasyProfile/EasyProtocol.h"
+#include "../include/EasyProtocol.h"
 
 
 EasyProtocol::EasyProtocol()
@@ -17,7 +17,7 @@ EasyProtocol::EasyProtocol()
 #       ifdef EP_PLATFORM_QT5_
         #define EP_QUEUE_SIZE_ (iDS*10)
 #       else
-        #define EP_QUEUE_SIZE_ (iDS*(EP_BUFFFER_MULTIPLIER_))  // Smaller queue size for embedded syst.
+        #define EP_QUEUE_SIZE_ (iDS*2)  // Smaller queue size for embedded syst.
 #       endif
         HEAD_1_          = 0xaa;  totalMem += sizeof(HEAD_1_);
         HEAD_2_          = 0x55;  totalMem += sizeof(HEAD_2_);
@@ -336,7 +336,7 @@ int EasyProtocol::UnWrapInData(
 
 
 /**
- * @brief  Assemble received raw data into package and then fetch the payload within it.
+ * @brief  Assemble received raw data into package and then fetch the payload wihtin it.
  * @return EP_NORMAL_EXIT_   No complete package is received.
  *         EP_FAIL_          Package received, but the checksum/parameter is wrong.
  *         EP_SUCC_          New package successfully received. Payload within it is returned
@@ -347,7 +347,7 @@ int EasyProtocol::AssembleInputPackage(
     char  *rawData,      ///< [INPUT]  Received raw data
     int    rawDataLenth, ///< [INPUT]  Size (bytes) of the raw data
     char **payloadData,  ///< [OUTPUT] Return a pointer to the payload of the successfuly received package.
-                         ///              The memory is allocated within this EasyProtocol object.
+                         ///              The memory is allocated whitn this EasyProtocol object.
                          ///              If no package is received successfully, it is set to 0.
     int   *payloadSize   ///< [OUTPUT] Return the size of the payload of the successfuly received package.
                          ///              If no package is received successfully, it is set to 0.

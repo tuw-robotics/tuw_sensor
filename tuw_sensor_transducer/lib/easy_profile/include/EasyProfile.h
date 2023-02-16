@@ -4,12 +4,10 @@
  * @brief  Managing the user-logic for sending and receiving Objects (items of the
  *         Object Dictionary (OD)). 
  *
- * @version Jul 27, 2016 - Release Version
- *          Feb 22, 2018 - Regular Update. No functional changes.
- *          May 22, 2019 - Update comments. 
- *
+ * @version 1.1.9     - Jul 02, 2016
+ *          1.1.9 (R) - Jul 27, 2016 - Release Version
  * @attention
- * <h2><center>&copy; COPYRIGHT(c) 2019 SYD Dynamics ApS</center></h2>
+ * <h2><center>&copy; COPYRIGHT(c) 2017 SYD Dynamics ApS</center></h2>
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:

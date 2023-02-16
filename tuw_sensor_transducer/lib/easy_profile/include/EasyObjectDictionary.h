@@ -1,18 +1,10 @@
 /**
  * Easy Object Dictionary
  *
- * @brief   Defines and Handles all data structure types for communication over e.g. EasyProtocol
+ * @brief   Defines and Handles all data structure typies for communicaiton over e.g. EasyProtocol
  *
- * @version Jul 27, 2016 - Release Version.
- *          Jun 20, 2017 - Add Ep_Calib data set. Release Version.
- *          Jul 10, 2017 - Add EP_CMD_SETTING_ dsata set. Release Version.
- *          Feb 22, 2018 - Add Ep_Status_SysState for reading QoS. Release Version.
- *          Mar 06, 2018 - Add support for reading Ep_Id.
- *                         Add support for version self-adapt for Ep_Setting. All relevant changes
- *                         are done within the EasyObjectDictionary.h and EasyObjectionary.cpp files,
- *                         which can be found using the '[Legacy Support]' keyword.
- *          Aug 02, 2018 - Update comments.
- *          May 22, 2019 - Update comments. 
+ * @version 1.1.8     - Jul 17, 2016
+ *          1.1.8 (R) - Jul 27, 2016 - Release Version.
  *
  * @attention
  *          *****        DO NOT CHANGE THIS FILE           *****
@@ -20,7 +12,7 @@
  *
  *
  * @attention
- * <h2><center>&copy; COPYRIGHT(c) 2019 SYD Dynamics ApS</center></h2>
+ * <h2><center>&copy; COPYRIGHT(c) 2017 SYD Dynamics ApS</center></h2>
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -52,16 +44,16 @@
 #define EP_CMD_TYPE_          uint8
 #define EP_CMD_BITS_            (7)
 #define EP_CMD_MASK_  (0x0000007fu)
-#define EP_RES_TYPE_          uint8
-#define EP_RES_BITS_            (3)
-#define EP_RES_MASK_  (0x00000007u)
+#define EP_QOS_TYPE_          uint8
+#define EP_QOS_BITS_            (3)
+#define EP_QOS_MASK_  (0x00000007u)
 #define EP_ID_TYPE_          uint16
 #define EP_ID_BITS_            (11)
 #define EP_ID_MASK_   (0x000007ffu)
 
 typedef struct{
-    uint32       cmd : EP_CMD_BITS_;      // Command Identifier (e.g. EP_CMD_RPY_ is one of the possible Command Identifier).
-    uint32       res : EP_RES_BITS_;      // Reserved Bits. Must set to Zero.
+    uint32      cmd  : EP_CMD_BITS_;      // Command Identifier (e.g. EP_CMD_RPY_ is one of the possible Command Identifier).
+    uint32      qos  : EP_QOS_BITS_;      // Quality-of-Service of the source device (only available on certain Models).
     uint32    fromId : EP_ID_BITS_;       // The Device Short-ID indicating the source of the data being delivered.
     uint32      toId : EP_ID_BITS_;       // The Device Short-ID indicating the destination of the data being delivered.
 } Ep_Header;
@@ -89,7 +81,6 @@ typedef struct{
 #define EP_CMD_ACK_               ((EP_CMD_TYPE_)13)
 
 #define EP_CMD_STATUS_            ((EP_CMD_TYPE_)22)
-#define EP_CMD_CALIB_             ((EP_CMD_TYPE_)23)
 
 #define EP_CMD_Q_S1_S_            ((EP_CMD_TYPE_)31)
 #define EP_CMD_Q_S1_E_            ((EP_CMD_TYPE_)32)
@@ -113,56 +104,12 @@ typedef struct{
     EP_CMD_TYPE_  cmdRequest;      // The command requested
 } Ep_Request;
 
-typedef union{
-    uint16 all_Bits;
-    struct{
-        uint16 qos  : 3;  // Quality of Service.
-                          // 0: Service unavailable due to boot or in sleep mode.
-                          // 1: Service unavailable due to System Fault.
-                          // 2: Limited Service -- Some functions are not available / Very limited measurement accuracy
-                          //                    (e.g. After Dynamic Boot)
-                          // 3: Basic Service   -- All functions available and providing basic performance.
-                          //                    (e.g. After Static Boot)
-                          // 4: Fine Service    -- All function available and providing fine performance.
-                          //                    (e.g. DynamicGyroCalib success 30 seconds after boot)
-                          // 5: Very Good Service -- All function available and providing very good performance.
-                          //                    (e.g. Two DynamicGyroCalib success after 5 minutes)
-                          // 6: Reserved.
-                          // 7: Use extended QoS definition.
-        uint16      :13;  // Unused Bits
-    }bits;
-} Ep_Status_SysState;
-
-typedef struct {
-    Ep_Header            header;
-    uint32            timeStamp;   // Timestamp              (Unit: uS)
-    float32         temperature;   // Sensor temperature     (Unit: Celcius)
-    uint16           updateRate;   // Internal sampling rate (Unit: Hz)
-    Ep_Status_SysState sysState;   // System State
-} Ep_Status;
-
 typedef struct {
     Ep_Header      header;
-    uint8       calibType;         // Use value 4 to run CalibB.
-                                   // A received package with calibType==(4+0x10) means it is a status report of the CalibB.
-                                   // Use value 5 to run Forced Calibration.
-                                   // A received package with calibType==(5+0x10) means it is a status report of the Forced Calibration.
-
-    uint8         ctrlVal;         // if(calibType==4)     ctrlVal=2   means to perform the calibration and the result will be saved into Flash Memory of the module.
-                                   // if(calibType==4+0x10)ctrlVal=1   means CalibB successfully finished.
-                                   // if(calibType==4+0x10)ctrlVal not equal to 1 or no response received, means CalibB failed.
-                                   // if(calibType==5)     ctrlVal=1   means to reset the results of Forced Calibration.
-                                   // if(calibType==5)     ctrlVal=2   means to perform the Forced Calibration.
-                                   // if(calibType==5+0x10)ctrlVal=0   means Forced Calibration is processing.
-                                   // if(calibType==5+0x10)ctrlVal=1   means Forced Calibration successfully finished.
-                                   // if(calibType==5+0x10)ctrlVal=5   means previous Forced Calibration result is revoked successfully.
-                                   // if(calibType==5+0x10)ctrlVal not equal to 1 nor 5, or no response received, means operation regarding Forced Calibration has failed.
-
-    uint16         param1;         // if(calibType==4) Param1 should always be 0xaa35.
-                                   // if(calibType==5) Param1 should always be 0xaa65.
-    uint32         param2;         // Reserved.
-    uint32         param3;         // Reserved.
-} Ep_Calib;
+    uint32      timeStamp;         // Timestamp              (Unit: uS)
+    float32   temperature;         // Sensor temperature     (Unit: Celcius)
+    uint16     updateRate;         // Internal sampling rate (Unit: Hz)
+} Ep_Status;
 
 typedef struct{
     Ep_Header      header;
@@ -186,18 +133,18 @@ typedef struct{
 
 typedef struct{
     Ep_Header      header;
-    uint32      timeStamp;         // Timestamp when the Euler angles are calculated (Unit: uS)
-    float32           psi;         // Euler angle (psi)   from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
-    float32         theta;         // Euler angle (theta) from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
-    float32           phi;         // Euler angle (phi)   from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
+    uint32      timeStamp;         // Timestamp when the Eular angles are calculated (Unit: uS)
+    float32           psi;         // Eular angle (psi)   from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
+    float32         theta;         // Eular angle (theta) from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
+    float32           phi;         // Eular angle (phi)   from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
 } Ep_Euler_s1_s;
 
 typedef struct{
     Ep_Header      header;
-    uint32      timeStamp;         // Timestamp when the Euler angles are calculated (Unit: uS)
-    float32           psi;         // Euler angle (psi)   from the current sensor frame to the Earth frame (Unit: degree)
-    float32         theta;         // Euler angle (theta) from the current sensor frame to the Earth frame (Unit: degree)
-    float32           phi;         // Euler angle (phi)   from the current sensor frame to the Earth frame (Unit: degree)
+    uint32      timeStamp;         // Timestamp when the Eular angles are calculated (Unit: uS)
+    float32           psi;         // Eular angle (psi)   from the current sensor frame to the Earth frame (Unit: degree)
+    float32         theta;         // Eular angle (theta) from the current sensor frame to the Earth frame (Unit: degree)
+    float32           phi;         // Eular angle (phi)   from the current sensor frame to the Earth frame (Unit: degree)
 } Ep_Euler_s1_e;
 
 typedef struct{
@@ -220,7 +167,6 @@ Q_DECLARE_METATYPE(Ep_Header)
 Q_DECLARE_METATYPE(Ep_Request)
 Q_DECLARE_METATYPE(Ep_Ack)
 Q_DECLARE_METATYPE(Ep_Status)
-Q_DECLARE_METATYPE(Ep_Calib)
 Q_DECLARE_METATYPE(Ep_Raw_GyroAccMag)
 Q_DECLARE_METATYPE(Ep_Q_s1_s)
 Q_DECLARE_METATYPE(Ep_Q_s1_e)
@@ -233,9 +179,9 @@ Q_DECLARE_METATYPE(Ep_Gravity)
 
 
 //------------------------------------------------------------------------
-// Object Items Database  (Part 1/2)
+// Object Items Database
 
-#define EOD_DB_SIZE_    (11)
+#define EOD_DB_SIZE_    (10)
 
 typedef struct{
     EP_CMD_TYPE_         cmd;
@@ -252,12 +198,25 @@ typedef struct{
 #define EOD_MUTEX_WRITE_PROTECT_ (0x4u)
 #define EOD_MUTEX_READ_PROTECT_  (0x8u)
 
+    // The Static DataBase:
+const EOD_DB_Static   eOD_DB_Static[ EOD_DB_SIZE_ ] = {
+    {EP_CMD_REQUEST_,         sizeof(Ep_Request)         },
+    {EP_CMD_ACK_,             sizeof(Ep_Ack)             },
+    {EP_CMD_STATUS_,          sizeof(Ep_Status)          },
+    {EP_CMD_Raw_GYRO_ACC_MAG_,sizeof(Ep_Raw_GyroAccMag)  },
+    {EP_CMD_Q_S1_S_,          sizeof(Ep_Q_s1_s)          },
+    {EP_CMD_Q_S1_E_,          sizeof(Ep_Q_s1_e)          },
+    {EP_CMD_EULER_S1_S_,      sizeof(Ep_Euler_s1_s)      },
+    {EP_CMD_EULER_S1_E_,      sizeof(Ep_Euler_s1_e)      },
+    {EP_CMD_RPY_,             sizeof(Ep_RPY)             },
+    {EP_CMD_GRAVITY_,         sizeof(Ep_Gravity)         }
+};
+
     // The Dynamic DataBase:
 #define EOD_DB_DYNAMIC_INIT    {\
     {&ep_Request,         EOD_MUTEX_UNLOCKED_      },\
     {&ep_Ack,             EOD_MUTEX_UNLOCKED_      },\
     {&ep_Status,          EOD_MUTEX_UNLOCKED_      },\
-    {&ep_Calib,           EOD_MUTEX_UNLOCKED_      },\
     {&ep_Raw_GyroAccMag,  EOD_MUTEX_UNLOCKED_      },\
     {&ep_Q_s1_s,          EOD_MUTEX_UNLOCKED_      },\
     {&ep_Q_s1_e,          EOD_MUTEX_UNLOCKED_      },\
@@ -266,7 +225,7 @@ typedef struct{
     {&ep_RPY,             EOD_MUTEX_UNLOCKED_      },\
     {&ep_Gravity,         EOD_MUTEX_UNLOCKED_      }\
 }
-// Object Items Database  (Part 2/2)
+// Object Items Database
 //------------------------------------------------------------------------
 
 
@@ -303,12 +262,12 @@ public:
 private:
     int maxSize;
 
+
 // Object Data:
 private:
     Ep_Request        ep_Request;
     Ep_Ack            ep_Ack;
     Ep_Status         ep_Status;
-    Ep_Calib          ep_Calib;
     Ep_Raw_GyroAccMag ep_Raw_GyroAccMag;
     Ep_Q_s1_s         ep_Q_s1_s;
     Ep_Q_s1_e         ep_Q_s1_e;
@@ -323,7 +282,6 @@ private:
 public:
     int Write_Ep_Ack(   EP_ID_TYPE_ toId, EP_CMD_TYPE_ cmdAck); 
     int Write_Ep_Status(EP_ID_TYPE_ toId, uint32 timeStamp, float32 temperature, uint16 updateRate);
-    int Write_Ep_Calib( EP_ID_TYPE_ toId, uint8  calibType, uint8 ctrlVal, uint16 param1, uint32 param2, uint32 param3);
     int Write_Ep_Raw_GyroAccMag(EP_ID_TYPE_ toId, uint32 timeStamp,
                                 float wx, float wy, float wz,
                                 float ax, float ay, float az,
@@ -338,8 +296,7 @@ public:
 
     int Read_Ep_Request(    Ep_Request*    dataOut);
     int Read_Ep_Ack(        Ep_Ack*        dataOut);
-    int Read_Ep_Status(     Ep_Status*     dataOut);
-    int Read_Ep_Calib(      Ep_Calib*      dataOut);
+    int Read_Ep_Status(     Ep_Status*     dataOut);                      
     int Read_Ep_Raw_GyroAccMag(Ep_Raw_GyroAccMag* dataOut);
     int Read_Ep_Q_s1_s(     Ep_Q_s1_s*     dataOut);
     int Read_Ep_Euler_s1_s( Ep_Euler_s1_s* dataOut);
