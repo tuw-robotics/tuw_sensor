@@ -2,7 +2,7 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include "../../include/tuw_sensor_transducer/sensor.h"
+#include <tuw_sensor_transducer/sensor.h>
 
 // TransducerM Interface:
 EasyObjectDictionary eOD;
@@ -51,22 +51,8 @@ Sensor::~Sensor()
 
 void Sensor::update()
 {
-  int toId = 1833;
-  char write_result;
-  if(EP_SUCC_ == eOD.Write_Ep_Request(toId, EP_CMD_RPY_)){   // Step 2: Write the device ID into the data structure (i.e. the request itself) pending to be sent
-    EP_ID_TYPE_  txToId;
-    char*        txPkgData;
-    int          txPkgSize;
-    EP_CMD_TYPE_ txCmd = EP_CMD_REQUEST_;                  // Step 3: Define what type of data we are requesting for. (in this example, we are requesting Roll-Pitch-Yaw readings.
-    if(EP_SUCC_ == eP.On_SendPkg(txCmd, &txToId, &txPkgData, &txPkgSize)){ // Step 4: create a package out of the data structure (i.e. the payload) to be sent
-      write_result = this->serialib_->Write(txPkgData, txPkgSize);
-    }
-  }
-
-//  ROS_INFO("write_result: %d", static_cast<int>(write_result));
-
   char serial_buffer[128];
-  int read_result = this->serialib_->Read(serial_buffer, sizeof(serial_buffer) / sizeof(char), this->timeout_);
+  int read_result = this->serialib_->Read(serial_buffer, sizeof(serial_buffer) / sizeof(char), NULL);
 
   Ep_Header header;
   char* data = serial_buffer;
@@ -75,8 +61,6 @@ void Sensor::update()
   {
     int sender_id = header.fromId;
     int command_type = header.cmd;
-
-    ROS_INFO("command_type: %d", command_type);
 
     // suppress warnings
     (void)sender_id;
@@ -104,6 +88,7 @@ void Sensor::update()
       }
       case EP_CMD_Raw_GYRO_ACC_MAG_:
       {
+        ROS_DEBUG("received raw data");
         Ep_Raw_GyroAccMag ep_Raw_GyroAccMag;
         if (EP_SUCC_ == eOD.Read_Ep_Raw_GyroAccMag(&ep_Raw_GyroAccMag))
         {
@@ -165,6 +150,7 @@ void Sensor::update()
       }
       case EP_CMD_RPY_:
       {
+        ROS_DEBUG("received rpy data");
         Ep_RPY ep_RPY;
         if (EP_SUCC_ == this->easy_object_dictionary_.Read_Ep_RPY(&ep_RPY))
         {
@@ -197,6 +183,6 @@ void Sensor::update()
   }
   else
   {
-    ROS_WARN("read was not successful, read result: %d", read_result);
+    ROS_DEBUG("read was not successful, read result: %d", read_result);
   }
 }
