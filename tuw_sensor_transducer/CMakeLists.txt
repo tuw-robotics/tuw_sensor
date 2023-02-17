@@ -35,7 +35,7 @@ add_library(
 
 add_library(
   ${PROJECT_NAME}
-  src/${PROJECT_NAME}/sensor
+  src/${PROJECT_NAME}/sensor.cpp
 )
 
 add_dependencies(
