@@ -52,7 +52,8 @@ Sensor::~Sensor()
 void Sensor::update()
 {
   char serial_buffer[128];
-  int read_result = this->serialib_->Read(serial_buffer, sizeof(serial_buffer) / sizeof(char), NULL);
+  int buffer_size = sizeof(serial_buffer) / sizeof(char);
+  int read_result = this->serialib_->Read(serial_buffer, buffer_size, static_cast<unsigned int>(NULL));
 
   Ep_Header header;
   char* data = serial_buffer;
