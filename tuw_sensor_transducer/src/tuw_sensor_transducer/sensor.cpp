@@ -4,10 +4,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tuw_sensor_transducer/sensor.h>
 
-// TransducerM Interface:
-EasyObjectDictionary eOD;
-EasyProfile          eP(&eOD);
-
 using tuw_sensor_transducer::Sensor;
 
 Sensor::Sensor(ros::NodeHandle node_handle)
