@@ -58,7 +58,7 @@ void Sensor::update()
   Ep_Header header;
   char* data = serial_buffer;
 
-  if (EP_SUCC_ == eP.On_RecvPkg(data, sizeof(serial_buffer) / sizeof(char), &header))
+  if (EP_SUCC_ == this->easy_profile_.On_RecvPkg(data, sizeof(serial_buffer) / sizeof(char), &header))
   {
     int sender_id = header.fromId;
     int command_type = header.cmd;
