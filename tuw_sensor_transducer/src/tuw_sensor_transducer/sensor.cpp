@@ -87,7 +87,7 @@ void Sensor::update()
       {
         ROS_DEBUG("received raw data");
         Ep_Raw_GyroAccMag ep_Raw_GyroAccMag;
-        if (EP_SUCC_ == eOD.Read_Ep_Raw_GyroAccMag(&ep_Raw_GyroAccMag))
+        if (EP_SUCC_ == this->easy_object_dictionary_.Read_Ep_Raw_GyroAccMag(&ep_Raw_GyroAccMag))
         {
           this->raw_message_ = sensor_msgs::Imu();
           this->raw_message_.header.seq += 1;
