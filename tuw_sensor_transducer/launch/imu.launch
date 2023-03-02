@@ -1,6 +1,9 @@
 <launch>
 
   <arg name="imu_filter"  default="true"/>
+  <arg name="imu_port"  default="/dev/ttyIMU"/>
+
+  <rosparam param="imu_port" subst_value="True">$(arg imu_port)</rosparam>
 
   <node pkg="tf"
         type="static_transform_publisher"
