@@ -21,7 +21,8 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>roslint</exec_depend>
   <exec_depend>libqt5-serialport-dev</exec_depend>
-  
+  <exec_depend>imu_filter_madgwick</exec_depend>
+
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>roslint</build_export_depend>
