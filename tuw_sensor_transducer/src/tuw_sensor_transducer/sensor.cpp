@@ -26,18 +26,34 @@ Sensor::Sensor(ros::NodeHandle node_handle)
 
   this->raw_publisher_ = node_handle.advertise<sensor_msgs::Imu>("imu_data_raw", 100, false);
   this->rpy_publisher_ = node_handle.advertise<sensor_msgs::Imu>("imu_data_rpy", 100, false);
+  this->mag_publisher_ = node_handle.advertise<sensor_msgs::MagneticField>("imu_data_mag", 100, false);
 
-  this->raw_message_.header.frame_id                = "imu";
-  this->raw_message_.header.seq                         = 1;
-  this->raw_message_.angular_velocity_covariance[0]    = -1;
-  this->raw_message_.linear_acceleration_covariance[0] = -1;
-  this->raw_message_.orientation_covariance[0]         = -1;
+  this->raw_message_ = sensor_msgs::Imu();
+  this->raw_message_.header.frame_id                  = "imu";
+  this->raw_message_.header.seq                          = +1;
+  for (int i = 0; i < 9; i++)
+  {
+    this->raw_message_.angular_velocity_covariance[i]    = -1;
+    this->raw_message_.linear_acceleration_covariance[i] = -1;
+    this->raw_message_.orientation_covariance[i]         = -1;
+  }
 
-  this->rpy_message_.header.frame_id                = "imu";
-  this->rpy_message_.header.seq                         = 1;
-  this->rpy_message_.angular_velocity_covariance[0]    = -1;
-  this->rpy_message_.linear_acceleration_covariance[0] = -1;
-  this->rpy_message_.orientation_covariance[0]         = -1;
+  this->rpy_message_ = sensor_msgs::Imu();
+  this->rpy_message_.header.frame_id                  = "imu";
+  this->rpy_message_.header.seq                           = 1;
+  for (int i = 0; i < 9; i++)
+  {
+    this->rpy_message_.angular_velocity_covariance[i]    = -1;
+    this->rpy_message_.linear_acceleration_covariance[i] = -1;
+    this->rpy_message_.orientation_covariance[i]         = -1;
+  }
+
+  this->mag_message_ = sensor_msgs::MagneticField();
+  this->mag_message_.header.frame_id                = "imu";
+  this->mag_message_.header.seq                        = +1;
+  for (int i = 0; i < 9; i++)
+    this->mag_message_.magnetic_field_covariance[i]     = 0;
+
 }
 
 Sensor::~Sensor()
@@ -89,23 +105,26 @@ void Sensor::update()
         Ep_Raw_GyroAccMag ep_Raw_GyroAccMag;
         if (EP_SUCC_ == this->easy_object_dictionary_.Read_Ep_Raw_GyroAccMag(&ep_Raw_GyroAccMag))
         {
-          this->raw_message_ = sensor_msgs::Imu();
           this->raw_message_.header.seq += 1;
           this->raw_message_.header.stamp = ros::Time::now();
 
-          geometry_msgs::Vector3 angular_velocity;
-          // ignore warning below, function return true for nan values
           this->raw_message_.angular_velocity.x = std::isnan(ep_Raw_GyroAccMag.gyro[0]) ? 0.0 : ep_Raw_GyroAccMag.gyro[0];
           this->raw_message_.angular_velocity.y = std::isnan(ep_Raw_GyroAccMag.gyro[1]) ? 0.0 : ep_Raw_GyroAccMag.gyro[1];
           this->raw_message_.angular_velocity.z = std::isnan(ep_Raw_GyroAccMag.gyro[2]) ? 0.0 : ep_Raw_GyroAccMag.gyro[2];
 
-          geometry_msgs::Vector3 linear_acceleration;
-          // ignore warning below, function return true for nan values
           this->raw_message_.linear_acceleration.x = std::isnan(ep_Raw_GyroAccMag.acc[0]) ? 0.0 : ep_Raw_GyroAccMag.acc[0];
           this->raw_message_.linear_acceleration.y = std::isnan(ep_Raw_GyroAccMag.acc[1]) ? 0.0 : ep_Raw_GyroAccMag.acc[1];
           this->raw_message_.linear_acceleration.z = std::isnan(ep_Raw_GyroAccMag.acc[2]) ? 0.0 : ep_Raw_GyroAccMag.acc[2];
 
+          this->mag_message_.header.seq += 1;
+          this->mag_message_.header.stamp = ros::Time::now();
+
+          this->mag_message_.magnetic_field.x = std::isnan(ep_Raw_GyroAccMag.mag[0]) ? 0.0 : ep_Raw_GyroAccMag.mag[0];
+          this->mag_message_.magnetic_field.y = std::isnan(ep_Raw_GyroAccMag.mag[1]) ? 0.0 : ep_Raw_GyroAccMag.mag[1];
+          this->mag_message_.magnetic_field.z = std::isnan(ep_Raw_GyroAccMag.mag[2]) ? 0.0 : ep_Raw_GyroAccMag.mag[2];
+
           this->raw_publisher_.publish(this->raw_message_);
+          this->mag_publisher_.publish(this->mag_message_);
         }
         break;
       }

@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/MagneticField.h>
 
 #include "../../lib/easy_profile/include/serialib.h"
 #include "../../lib/easy_profile/include/EasyObjectDictionary.h"
@@ -28,8 +29,10 @@ private:
   EasyProfile easy_profile_ {&this->easy_object_dictionary_};
   ros::Publisher raw_publisher_;
   ros::Publisher rpy_publisher_;
+  ros::Publisher mag_publisher_;
   sensor_msgs::Imu raw_message_;
   sensor_msgs::Imu rpy_message_;
+  sensor_msgs::MagneticField mag_message_;
 };
 }  // namespace tuw_sensor_transducer
 
