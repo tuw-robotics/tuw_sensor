@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="imu_filter"  default="true"/>
-  <arg name="imu_port"  default="/dev/ttyUSB1"/>
+  <arg name="imu_port"  default="/dev/transducer"/>
 
   <rosparam param="imu_port" subst_value="True">$(arg imu_port)</rosparam>
 
