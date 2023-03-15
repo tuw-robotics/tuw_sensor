@@ -20,6 +20,7 @@
 
   <node pkg="tuw_sensor_transducer"
         type="tuw_sensor_transducer_node"
-        name="tuw_sensor_transducer_node" />
+        name="tuw_sensor_transducer_node"
+        output="screen"/>
 
 </launch>

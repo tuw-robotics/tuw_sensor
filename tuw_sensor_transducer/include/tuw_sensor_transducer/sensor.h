@@ -33,6 +33,11 @@ private:
   sensor_msgs::Imu raw_message_;
   sensor_msgs::Imu rpy_message_;
   sensor_msgs::MagneticField mag_message_;
+  bool rpy_offset{false};
+  double r_offset{0.0};
+  double p_offset{0.0};
+  double y_offset{0.0};
+  static double degreeToRad(double degree);
 };
 }  // namespace tuw_sensor_transducer
 

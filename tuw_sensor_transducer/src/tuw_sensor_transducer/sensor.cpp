@@ -52,7 +52,9 @@ Sensor::Sensor(ros::NodeHandle node_handle)
   this->mag_message_.header.frame_id                = "imu";
   this->mag_message_.header.seq                        = +1;
   for (int i = 0; i < 9; i++)
+  {
     this->mag_message_.magnetic_field_covariance[i]     = 0;
+  }
 
 }
 
@@ -173,11 +175,30 @@ void Sensor::update()
           this->rpy_message_.header.seq += 1;
           this->rpy_message_.header.stamp = ros::Time::now();
 
-          tf2::Quaternion orientation_quaternion;
-          orientation_quaternion.setRPY(ep_RPY.roll, ep_RPY.pitch, ep_RPY.yaw);
-          tf2::convert(orientation_quaternion, this->rpy_message_.orientation);
+          if (!this->rpy_offset && ep_RPY.roll != 0.0 && ep_RPY.pitch != 0.0 && ep_RPY.yaw != 0.0)
+          {
+            this->rpy_offset = true;
+            this->r_offset = Sensor::degreeToRad(ep_RPY.roll );
+            this->p_offset = Sensor::degreeToRad(ep_RPY.pitch);
+            this->y_offset = Sensor::degreeToRad(ep_RPY.yaw  );
+            ROS_DEBUG("Initial setup for IMU finished");
+            ROS_DEBUG("offset roll: %f", this->r_offset);
+            ROS_DEBUG("offset pitch: %f", this->p_offset);
+            ROS_DEBUG("offset yaw: %f", this->y_offset);
+          }
 
-          this->rpy_publisher_.publish(this->rpy_message_);
+          if (this->rpy_offset)
+          {
+            double roll  = Sensor::degreeToRad(ep_RPY.roll ) - this->r_offset;
+            double pitch = Sensor::degreeToRad(ep_RPY.pitch) - this->p_offset;
+            double yaw   = Sensor::degreeToRad(ep_RPY.yaw  ) - this->y_offset;
+
+            tf2::Quaternion orientation_quaternion;
+            orientation_quaternion.setRPY(roll, pitch, yaw);
+            tf2::convert(orientation_quaternion, this->rpy_message_.orientation);
+
+            this->rpy_publisher_.publish(this->rpy_message_);
+          }
         }
         break;
       }
@@ -201,4 +222,9 @@ void Sensor::update()
   {
     ROS_DEBUG("read was not successful, read result: %d", read_result);
   }
+}
+
+double Sensor::degreeToRad(double degree)
+{
+  return degree * M_PI / 180.0;
 }
