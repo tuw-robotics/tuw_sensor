@@ -15,7 +15,7 @@
         name="imu_filter_node">
     <remap from="/imu/data_raw" to="/imu_data_raw" />
     <remap from="/imu/mag"      to="/imu_data_mag" />
-    <remap from="/imu/data"     to="/imu_data_filter"/>
+    <remap from="/imu/data"     to="/imu_data"/>
   </node>
 
   <node pkg="tuw_sensor_transducer"
