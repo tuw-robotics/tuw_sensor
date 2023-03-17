@@ -21,6 +21,8 @@ public:
   ~Sensor();
   void update();
 private:
+  static double degreeToRad(double degree);
+  static double normalizeRad(double rad);
   std::string port_;
   int baudrate_ {0};
   int timeout_ {0};
@@ -37,7 +39,6 @@ private:
   double r_offset{0.0};
   double p_offset{0.0};
   double y_offset{0.0};
-  static double degreeToRad(double degree);
 };
 }  // namespace tuw_sensor_transducer
 

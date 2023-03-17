@@ -178,9 +178,9 @@ void Sensor::update()
           if (!this->rpy_offset && ep_RPY.roll != 0.0 && ep_RPY.pitch != 0.0 && ep_RPY.yaw != 0.0)
           {
             this->rpy_offset = true;
-            this->r_offset = Sensor::degreeToRad(ep_RPY.roll );
-            this->p_offset = Sensor::degreeToRad(ep_RPY.pitch);
-            this->y_offset = Sensor::degreeToRad(ep_RPY.yaw  );
+            this->r_offset = Sensor::normalizeRad(Sensor::degreeToRad(ep_RPY.roll ));
+            this->p_offset = Sensor::normalizeRad(Sensor::degreeToRad(ep_RPY.pitch));
+            this->y_offset = Sensor::normalizeRad(Sensor::degreeToRad(ep_RPY.yaw  ));
             ROS_DEBUG("Initial setup for IMU finished");
             ROS_DEBUG("offset roll: %f", this->r_offset);
             ROS_DEBUG("offset pitch: %f", this->p_offset);
@@ -189,9 +189,9 @@ void Sensor::update()
 
           if (this->rpy_offset)
           {
-            double roll  = Sensor::degreeToRad(ep_RPY.roll ) - this->r_offset;
-            double pitch = Sensor::degreeToRad(ep_RPY.pitch) - this->p_offset;
-            double yaw   = Sensor::degreeToRad(ep_RPY.yaw  ) - this->y_offset;
+            double roll  = Sensor::normalizeRad(Sensor::degreeToRad(ep_RPY.roll ) - this->r_offset);
+            double pitch = Sensor::normalizeRad(Sensor::degreeToRad(ep_RPY.pitch) - this->p_offset);
+            double yaw   = Sensor::normalizeRad(Sensor::degreeToRad(ep_RPY.yaw  ) - this->y_offset);
 
             tf2::Quaternion orientation_quaternion;
             orientation_quaternion.setRPY(roll, pitch, yaw);
@@ -227,4 +227,19 @@ void Sensor::update()
 double Sensor::degreeToRad(double degree)
 {
   return degree * M_PI / 180.0;
+}
+
+double tuw_sensor_transducer::Sensor::normalizeRad(double rad)
+{
+  while (rad >  M_PI)
+  {
+    rad = rad - M_PI;
+  }
+
+  while (rad < -M_PI)
+  {
+    rad = rad + M_PI;
+  }
+
+  return rad;
 }
