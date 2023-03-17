@@ -231,14 +231,14 @@ double Sensor::degreeToRad(double degree)
 
 double tuw_sensor_transducer::Sensor::normalizeRad(double rad)
 {
-  while (rad >  M_PI)
+  while (rad >  2.0 * M_PI)
   {
-    rad = rad - M_PI;
+    rad = rad - 2.0 * M_PI;
   }
 
-  while (rad < -M_PI)
+  while (rad < -2.0 * M_PI)
   {
-    rad = rad + M_PI;
+    rad = rad + 2.0 * M_PI;
   }
 
   return rad;
